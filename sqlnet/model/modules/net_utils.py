@@ -24,7 +24,7 @@ def run_gru(gru, inp, inp_len, hidden=None):
     sort_ret_s, sort_ret_h = gru(gru_inp, gru_hidden)
     ret_s = nn.utils.rnn.pad_packed_sequence(
             sort_ret_s, batch_first=True)[0][sort_perm_inv]
-    ret_h = sort_ret_h[:, sort_perm_inv]
+    ret_h = sort_ret_h
     return ret_s, ret_h
 
 

@@ -34,7 +34,7 @@ class AggPredictor(nn.Module):
         B = len(x_emb_var)
         max_x_len = max(x_len)
 
-        h_enc = run_gru(self.agg_gru, x_emb_var, x_len)
+        h_enc, _ = run_gru(self.agg_gru, x_emb_var, x_len)
         if self.use_ca:
             e_col, _ = col_name_encode(col_inp_var, col_name_len, 
                     col_len, self.agg_col_name_enc)

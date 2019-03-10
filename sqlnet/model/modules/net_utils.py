@@ -31,7 +31,7 @@ def run_gru(gru, inp, inp_len, hidden=None):
 def col_name_encode(name_inp_var, name_len, col_len, enc_gru):
     #Encode the columns.
     #The embedding of a column name is the last state of its GRU output.
-    name_hidden = run_gru(enc_gru, name_inp_var, name_len)
+    name_hidden, _ = run_gru(enc_gru, name_inp_var, name_len)
     name_out = name_hidden[tuple(range(len(name_len))), name_len-1]
     ret = torch.FloatTensor(
             len(col_len), max(col_len), name_out.size()[1]).zero_()

@@ -127,7 +127,7 @@ class SQLNetCondPredictor(nn.Module):
         cond_num_h2 = self.cond_num_col2hid2(K_num_col).view(
                 B, 4, self.N_h/2).transpose(0, 1).contiguous()
 
-        h_num_enc = run_gru(self.cond_num_gru, x_emb_var, x_len,
+        h_num_enc, _ = run_gru(self.cond_num_gru, x_emb_var, x_len,
                 hidden=(cond_num_h1, cond_num_h2))
 
         num_att_val = self.cond_num_att(h_num_enc).squeeze()
@@ -145,7 +145,7 @@ class SQLNetCondPredictor(nn.Module):
         e_cond_col, _ = col_name_encode(col_inp_var, col_name_len, col_len,
                 self.cond_col_name_enc)
 
-        h_col_enc = run_gru(self.cond_col_gru, x_emb_var, x_len)
+        h_col_enc, _ = run_gru(self.cond_col_gru, x_emb_var, x_len)
         if self.use_ca:
             col_att_val = torch.bmm(e_cond_col,
                     self.cond_col_att(h_col_enc).transpose(1, 2))
@@ -192,7 +192,7 @@ class SQLNetCondPredictor(nn.Module):
             col_emb.append(cur_col_emb)
         col_emb = torch.stack(col_emb)
 
-        h_op_enc = run_gru(self.cond_op_gru, x_emb_var, x_len)
+        h_op_enc, _ = run_gru(self.cond_op_gru, x_emb_var, x_len)
         if self.use_ca:
             op_att_val = torch.matmul(self.cond_op_att(h_op_enc).unsqueeze(1),
                     col_emb.unsqueeze(3)).squeeze()
@@ -213,7 +213,7 @@ class SQLNetCondPredictor(nn.Module):
                 self.cond_op_out_col(col_emb)).squeeze()
 
         #Predict the string of conditions
-        h_str_enc = run_gru(self.cond_str_gru, x_emb_var, x_len)
+        h_str_enc, _ = run_gru(self.cond_str_gru, x_emb_var, x_len)
         e_cond_col, _ = col_name_encode(col_inp_var, col_name_len,
                 col_len, self.cond_str_name_enc)
         col_emb = []

@@ -54,12 +54,12 @@ class Seq2SQLCondPredictor(nn.Module):
         max_x_len = max(x_len)
         B = len(x_len)
 
-        h_enc, hidden = run_gru(self.cond_gru, x_emb_var, x_len)
+        h_enc, hidden, _ = run_gru(self.cond_gru, x_emb_var, x_len)
         decoder_hidden = tuple(torch.cat((hid[:2], hid[2:]),dim=2) 
                 for hid in hidden)
         if gt_where is not None:
             gt_tok_seq, gt_tok_len = self.gen_gt_batch(gt_where, gen_inp=True)
-            g_s = run_gru(self.cond_decoder,
+            g_s, _ = run_gru(self.cond_decoder,
                     gt_tok_seq, gt_tok_len, decoder_hidden)
 
             h_enc_expand = h_enc.unsqueeze(1)

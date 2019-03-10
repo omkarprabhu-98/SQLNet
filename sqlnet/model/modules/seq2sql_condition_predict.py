@@ -17,10 +17,10 @@ class Seq2SQLCondPredictor(nn.Module):
 
         self.cond_gru = nn.GRU(input_size=N_word, hidden_size=N_h/2,
                 num_layers=N_depth, batch_first=True,
-                dropout=0.3, bidirectional=True)
+                dropout=0.3, bidirectional=True).cuda()
         self.cond_decoder = nn.GRU(input_size=self.max_tok_num,
                 hidden_size=N_h, num_layers=N_depth,
-                batch_first=True, dropout=0.3)
+                batch_first=True, dropout=0.3).cuda()
 
         self.cond_out_g = nn.Linear(N_h, N_h)
         self.cond_out_h = nn.Linear(N_h, N_h)

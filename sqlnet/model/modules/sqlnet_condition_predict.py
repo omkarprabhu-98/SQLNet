@@ -17,20 +17,20 @@ class SQLNetCondPredictor(nn.Module):
 
         self.cond_num_gru = nn.GRU(input_size=N_word, hidden_size=N_h/2,
                 num_layers=N_depth, batch_first=True,
-                dropout=0.3, bidirectional=True)
+                dropout=0.3, bidirectional=True).cuda()
         self.cond_num_att = nn.Linear(N_h, 1)
         self.cond_num_out = nn.Sequential(nn.Linear(N_h, N_h),
                 nn.Tanh(), nn.Linear(N_h, 5))
         self.cond_num_name_enc = nn.GRU(input_size=N_word, hidden_size=N_h/2,
                 num_layers=N_depth, batch_first=True,
-                dropout=0.3, bidirectional=True)
+                dropout=0.3, bidirectional=True).cuda()
         self.cond_num_col_att = nn.Linear(N_h, 1)
         self.cond_num_col2hid1 = nn.Linear(N_h, 2*N_h)
         self.cond_num_col2hid2 = nn.Linear(N_h, 2*N_h)
 
         self.cond_col_gru = nn.GRU(input_size=N_word, hidden_size=N_h/2,
                 num_layers=N_depth, batch_first=True,
-                dropout=0.3, bidirectional=True)
+                dropout=0.3, bidirectional=True).cuda()
         if use_ca:
             print "Using column attention on where predicting"
             self.cond_col_att = nn.Linear(N_h, N_h)
@@ -39,14 +39,14 @@ class SQLNetCondPredictor(nn.Module):
             self.cond_col_att = nn.Linear(N_h, 1)
         self.cond_col_name_enc = nn.GRU(input_size=N_word, hidden_size=N_h/2,
                 num_layers=N_depth, batch_first=True,
-                dropout=0.3, bidirectional=True)
+                dropout=0.3, bidirectional=True).cuda()
         self.cond_col_out_K = nn.Linear(N_h, N_h)
         self.cond_col_out_col = nn.Linear(N_h, N_h)
         self.cond_col_out = nn.Sequential(nn.ReLU(), nn.Linear(N_h, 1))
 
         self.cond_op_gru = nn.GRU(input_size=N_word, hidden_size=N_h/2,
                 num_layers=N_depth, batch_first=True,
-                dropout=0.3, bidirectional=True)
+                dropout=0.3, bidirectional=True).cuda()
         if use_ca:
             self.cond_op_att = nn.Linear(N_h, N_h)
         else:
@@ -54,20 +54,20 @@ class SQLNetCondPredictor(nn.Module):
         self.cond_op_out_K = nn.Linear(N_h, N_h)
         self.cond_op_name_enc = nn.GRU(input_size=N_word, hidden_size=N_h/2,
                 num_layers=N_depth, batch_first=True,
-                dropout=0.3, bidirectional=True)
+                dropout=0.3, bidirectional=True).cuda()
         self.cond_op_out_col = nn.Linear(N_h, N_h)
         self.cond_op_out = nn.Sequential(nn.Linear(N_h, N_h), nn.Tanh(),
                 nn.Linear(N_h, 3))
 
         self.cond_str_gru = nn.GRU(input_size=N_word, hidden_size=N_h/2,
                 num_layers=N_depth, batch_first=True,
-                dropout=0.3, bidirectional=True)
+                dropout=0.3, bidirectional=True).cuda()
         self.cond_str_decoder = nn.GRU(input_size=self.max_tok_num,
                 hidden_size=N_h, num_layers=N_depth,
-                batch_first=True, dropout=0.3)
+                batch_first=True, dropout=0.3).cuda()
         self.cond_str_name_enc = nn.GRU(input_size=N_word, hidden_size=N_h/2,
                 num_layers=N_depth, batch_first=True,
-                dropout=0.3, bidirectional=True)
+                dropout=0.3, bidirectional=True).cuda()
         self.cond_str_out_g = nn.Linear(N_h, N_h)
         self.cond_str_out_h = nn.Linear(N_h, N_h)
         self.cond_str_out_col = nn.Linear(N_h, N_h)

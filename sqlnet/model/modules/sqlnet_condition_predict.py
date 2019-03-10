@@ -4,7 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 import numpy as np
-from net_utils import run_lstm, col_name_encode
+from net_utils import run_gru, col_name_encode
 
 class SQLNetCondPredictor(nn.Module):
     def __init__(self, N_word, N_h, N_depth, max_col_num, max_tok_num, use_ca, gpu):
@@ -15,20 +15,20 @@ class SQLNetCondPredictor(nn.Module):
         self.gpu = gpu
         self.use_ca = use_ca
 
-        self.cond_num_lstm = nn.LSTM(input_size=N_word, hidden_size=N_h/2,
+        self.cond_num_gru = nn.GRU(input_size=N_word, hidden_size=N_h/2,
                 num_layers=N_depth, batch_first=True,
                 dropout=0.3, bidirectional=True)
         self.cond_num_att = nn.Linear(N_h, 1)
         self.cond_num_out = nn.Sequential(nn.Linear(N_h, N_h),
                 nn.Tanh(), nn.Linear(N_h, 5))
-        self.cond_num_name_enc = nn.LSTM(input_size=N_word, hidden_size=N_h/2,
+        self.cond_num_name_enc = nn.GRU(input_size=N_word, hidden_size=N_h/2,
                 num_layers=N_depth, batch_first=True,
                 dropout=0.3, bidirectional=True)
         self.cond_num_col_att = nn.Linear(N_h, 1)
         self.cond_num_col2hid1 = nn.Linear(N_h, 2*N_h)
         self.cond_num_col2hid2 = nn.Linear(N_h, 2*N_h)
 
-        self.cond_col_lstm = nn.LSTM(input_size=N_word, hidden_size=N_h/2,
+        self.cond_col_gru = nn.GRU(input_size=N_word, hidden_size=N_h/2,
                 num_layers=N_depth, batch_first=True,
                 dropout=0.3, bidirectional=True)
         if use_ca:
@@ -37,14 +37,14 @@ class SQLNetCondPredictor(nn.Module):
         else:
             print "Not using column attention on where predicting"
             self.cond_col_att = nn.Linear(N_h, 1)
-        self.cond_col_name_enc = nn.LSTM(input_size=N_word, hidden_size=N_h/2,
+        self.cond_col_name_enc = nn.GRU(input_size=N_word, hidden_size=N_h/2,
                 num_layers=N_depth, batch_first=True,
                 dropout=0.3, bidirectional=True)
         self.cond_col_out_K = nn.Linear(N_h, N_h)
         self.cond_col_out_col = nn.Linear(N_h, N_h)
         self.cond_col_out = nn.Sequential(nn.ReLU(), nn.Linear(N_h, 1))
 
-        self.cond_op_lstm = nn.LSTM(input_size=N_word, hidden_size=N_h/2,
+        self.cond_op_gru = nn.GRU(input_size=N_word, hidden_size=N_h/2,
                 num_layers=N_depth, batch_first=True,
                 dropout=0.3, bidirectional=True)
         if use_ca:
@@ -52,20 +52,20 @@ class SQLNetCondPredictor(nn.Module):
         else:
             self.cond_op_att = nn.Linear(N_h, 1)
         self.cond_op_out_K = nn.Linear(N_h, N_h)
-        self.cond_op_name_enc = nn.LSTM(input_size=N_word, hidden_size=N_h/2,
+        self.cond_op_name_enc = nn.GRU(input_size=N_word, hidden_size=N_h/2,
                 num_layers=N_depth, batch_first=True,
                 dropout=0.3, bidirectional=True)
         self.cond_op_out_col = nn.Linear(N_h, N_h)
         self.cond_op_out = nn.Sequential(nn.Linear(N_h, N_h), nn.Tanh(),
                 nn.Linear(N_h, 3))
 
-        self.cond_str_lstm = nn.LSTM(input_size=N_word, hidden_size=N_h/2,
+        self.cond_str_gru = nn.GRU(input_size=N_word, hidden_size=N_h/2,
                 num_layers=N_depth, batch_first=True,
                 dropout=0.3, bidirectional=True)
-        self.cond_str_decoder = nn.LSTM(input_size=self.max_tok_num,
+        self.cond_str_decoder = nn.GRU(input_size=self.max_tok_num,
                 hidden_size=N_h, num_layers=N_depth,
                 batch_first=True, dropout=0.3)
-        self.cond_str_name_enc = nn.LSTM(input_size=N_word, hidden_size=N_h/2,
+        self.cond_str_name_enc = nn.GRU(input_size=N_word, hidden_size=N_h/2,
                 num_layers=N_depth, batch_first=True,
                 dropout=0.3, bidirectional=True)
         self.cond_str_out_g = nn.Linear(N_h, N_h)
@@ -113,7 +113,7 @@ class SQLNetCondPredictor(nn.Module):
 
         # Predict the number of conditions
         # First use column embeddings to calculate the initial hidden unit
-        # Then run the LSTM and predict condition number.
+        # Then run the GRU and predict condition number.
         e_num_col, col_num = col_name_encode(col_inp_var, col_name_len,
                 col_len, self.cond_num_name_enc)
         num_col_att_val = self.cond_num_col_att(e_num_col).squeeze()
@@ -127,7 +127,7 @@ class SQLNetCondPredictor(nn.Module):
         cond_num_h2 = self.cond_num_col2hid2(K_num_col).view(
                 B, 4, self.N_h/2).transpose(0, 1).contiguous()
 
-        h_num_enc, _ = run_lstm(self.cond_num_lstm, x_emb_var, x_len,
+        h_num_enc, _ = run_gru(self.cond_num_gru, x_emb_var, x_len,
                 hidden=(cond_num_h1, cond_num_h2))
 
         num_att_val = self.cond_num_att(h_num_enc).squeeze()
@@ -145,7 +145,7 @@ class SQLNetCondPredictor(nn.Module):
         e_cond_col, _ = col_name_encode(col_inp_var, col_name_len, col_len,
                 self.cond_col_name_enc)
 
-        h_col_enc, _ = run_lstm(self.cond_col_lstm, x_emb_var, x_len)
+        h_col_enc, _ = run_gru(self.cond_col_gru, x_emb_var, x_len)
         if self.use_ca:
             col_att_val = torch.bmm(e_cond_col,
                     self.cond_col_att(h_col_enc).transpose(1, 2))
@@ -192,7 +192,7 @@ class SQLNetCondPredictor(nn.Module):
             col_emb.append(cur_col_emb)
         col_emb = torch.stack(col_emb)
 
-        h_op_enc, _ = run_lstm(self.cond_op_lstm, x_emb_var, x_len)
+        h_op_enc, _ = run_gru(self.cond_op_gru, x_emb_var, x_len)
         if self.use_ca:
             op_att_val = torch.matmul(self.cond_op_att(h_op_enc).unsqueeze(1),
                     col_emb.unsqueeze(3)).squeeze()
@@ -213,7 +213,7 @@ class SQLNetCondPredictor(nn.Module):
                 self.cond_op_out_col(col_emb)).squeeze()
 
         #Predict the string of conditions
-        h_str_enc, _ = run_lstm(self.cond_str_lstm, x_emb_var, x_len)
+        h_str_enc, _ = run_gru(self.cond_str_gru, x_emb_var, x_len)
         e_cond_col, _ = col_name_encode(col_inp_var, col_name_len,
                 col_len, self.cond_str_name_enc)
         col_emb = []

@@ -4,7 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 import numpy as np
-from net_utils import run_lstm, col_name_encode
+from net_utils import run_gru, col_name_encode
 
 
 
@@ -13,12 +13,12 @@ class AggPredictor(nn.Module):
         super(AggPredictor, self).__init__()
         self.use_ca = use_ca
 
-        self.agg_lstm = nn.LSTM(input_size=N_word, hidden_size=N_h/2,
+        self.agg_gru = nn.GRU(input_size=N_word, hidden_size=N_h/2,
                 num_layers=N_depth, batch_first=True,
                 dropout=0.3, bidirectional=True)
         if use_ca:
             print "Using column attention on aggregator predicting"
-            self.agg_col_name_enc = nn.LSTM(input_size=N_word,
+            self.agg_col_name_enc = nn.GRU(input_size=N_word,
                     hidden_size=N_h/2, num_layers=N_depth,
                     batch_first=True, dropout=0.3, bidirectional=True)
             self.agg_att = nn.Linear(N_h, N_h)
@@ -34,7 +34,7 @@ class AggPredictor(nn.Module):
         B = len(x_emb_var)
         max_x_len = max(x_len)
 
-        h_enc, _ = run_lstm(self.agg_lstm, x_emb_var, x_len)
+        h_enc, _ = run_gru(self.agg_gru, x_emb_var, x_len)
         if self.use_ca:
             e_col, _ = col_name_encode(col_inp_var, col_name_len, 
                     col_len, self.agg_col_name_enc)

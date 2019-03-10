@@ -4,7 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 import numpy as np
-from net_utils import run_lstm
+from net_utils import run_gru
 
 class Seq2SQLCondPredictor(nn.Module):
     def __init__(self, N_word, N_h, N_depth, max_col_num, max_tok_num, gpu):
@@ -15,10 +15,10 @@ class Seq2SQLCondPredictor(nn.Module):
         self.max_col_num = max_col_num
         self.gpu = gpu
 
-        self.cond_lstm = nn.LSTM(input_size=N_word, hidden_size=N_h/2,
+        self.cond_gru = nn.GRU(input_size=N_word, hidden_size=N_h/2,
                 num_layers=N_depth, batch_first=True,
                 dropout=0.3, bidirectional=True)
-        self.cond_decoder = nn.LSTM(input_size=self.max_tok_num,
+        self.cond_decoder = nn.GRU(input_size=self.max_tok_num,
                 hidden_size=N_h, num_layers=N_depth,
                 batch_first=True, dropout=0.3)
 
@@ -54,12 +54,12 @@ class Seq2SQLCondPredictor(nn.Module):
         max_x_len = max(x_len)
         B = len(x_len)
 
-        h_enc, hidden = run_lstm(self.cond_lstm, x_emb_var, x_len)
+        h_enc, hidden = run_gru(self.cond_gru, x_emb_var, x_len)
         decoder_hidden = tuple(torch.cat((hid[:2], hid[2:]),dim=2) 
                 for hid in hidden)
         if gt_where is not None:
             gt_tok_seq, gt_tok_len = self.gen_gt_batch(gt_where, gen_inp=True)
-            g_s, _ = run_lstm(self.cond_decoder,
+            g_s, _ = run_gru(self.cond_decoder,
                     gt_tok_seq, gt_tok_len, decoder_hidden)
 
             h_enc_expand = h_enc.unsqueeze(1)

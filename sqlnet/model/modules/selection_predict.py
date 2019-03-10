@@ -38,7 +38,7 @@ class SelPredictor(nn.Module):
                 col_len, self.sel_col_name_enc)
 
         if self.use_ca:
-            h_enc, _ = run_gru(self.sel_gru, x_emb_var, x_len)
+            h_enc = run_gru(self.sel_gru, x_emb_var, x_len)
             att_val = torch.bmm(e_col, self.sel_att(h_enc).transpose(1, 2))
             for idx, num in enumerate(x_len):
                 if num < max_x_len:
@@ -47,7 +47,7 @@ class SelPredictor(nn.Module):
                     B, -1, max_x_len)
             K_sel_expand = (h_enc.unsqueeze(1) * att.unsqueeze(3)).sum(2)
         else:
-            h_enc, _ = run_gru(self.sel_gru, x_emb_var, x_len)
+            h_enc = run_gru(self.sel_gru, x_emb_var, x_len)
             att_val = self.sel_att(h_enc).squeeze()
             for idx, num in enumerate(x_len):
                 if num < max_x_len:

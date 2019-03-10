@@ -59,7 +59,7 @@ class Seq2SQLCondPredictor(nn.Module):
                 for hid in hidden)
         if gt_where is not None:
             gt_tok_seq, gt_tok_len = self.gen_gt_batch(gt_where, gen_inp=True)
-            g_s, _ = run_gru(self.cond_decoder,
+            g_s = run_gru(self.cond_decoder,
                     gt_tok_seq, gt_tok_len, decoder_hidden)
 
             h_enc_expand = h_enc.unsqueeze(1)

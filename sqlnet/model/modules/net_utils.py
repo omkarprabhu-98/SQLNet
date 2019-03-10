@@ -24,14 +24,14 @@ def run_gru(gru, inp, inp_len, hidden=None):
     sort_ret_s, sort_ret_h = gru(gru_inp, gru_hidden)
     ret_s = nn.utils.rnn.pad_packed_sequence(
             sort_ret_s, batch_first=True)[0][sort_perm_inv]
-    ret_h = (sort_ret_h[0][:, sort_perm_inv], sort_ret_h[1][:, sort_perm_inv])
+    ret_h = sort_ret_h[0][:, sort_perm_inv]
     return ret_s, ret_h
 
 
 def col_name_encode(name_inp_var, name_len, col_len, enc_gru):
     #Encode the columns.
     #The embedding of a column name is the last state of its GRU output.
-    name_hidden, _ = run_gru(enc_gru, name_inp_var, name_len)
+    name_hidden = run_gru(enc_gru, name_inp_var, name_len)
     name_out = name_hidden[tuple(range(len(name_len))), name_len-1]
     ret = torch.FloatTensor(
             len(col_len), max(col_len), name_out.size()[1]).zero_()

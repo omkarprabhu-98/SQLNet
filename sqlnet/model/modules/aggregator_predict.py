@@ -15,12 +15,12 @@ class AggPredictor(nn.Module):
 
         self.agg_gru = nn.GRU(input_size=N_word, hidden_size=N_h/2,
                 num_layers=N_depth, batch_first=True,
-                dropout=0.3, bidirectional=True).cuda()
+                dropout=0.3, bidirectional=True)
         if use_ca:
             print "Using column attention on aggregator predicting"
             self.agg_col_name_enc = nn.GRU(input_size=N_word,
                     hidden_size=N_h/2, num_layers=N_depth,
-                    batch_first=True, dropout=0.3, bidirectional=True).cuda()
+                    batch_first=True, dropout=0.3, bidirectional=True)
             self.agg_att = nn.Linear(N_h, N_h)
         else:
             print "Not using column attention on aggregator predicting"

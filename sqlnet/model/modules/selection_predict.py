@@ -13,7 +13,7 @@ class SelPredictor(nn.Module):
         self.max_tok_num = max_tok_num
         self.sel_gru = nn.GRU(input_size=N_word, hidden_size=N_h/2,
                 num_layers=N_depth, batch_first=True,
-                dropout=0.3, bidirectional=True).cuda()
+                dropout=0.3, bidirectional=True)
         if use_ca:
             print "Using column attention on selection predicting"
             self.sel_att = nn.Linear(N_h, N_h)
@@ -22,7 +22,7 @@ class SelPredictor(nn.Module):
             self.sel_att = nn.Linear(N_h, 1)
         self.sel_col_name_enc = nn.GRU(input_size=N_word, hidden_size=N_h/2,
                 num_layers=N_depth, batch_first=True,
-                dropout=0.3, bidirectional=True).cuda()
+                dropout=0.3, bidirectional=True)
         self.sel_out_K = nn.Linear(N_h, N_h)
         self.sel_out_col = nn.Linear(N_h, N_h)
         self.sel_out = nn.Sequential(nn.Tanh(), nn.Linear(N_h, 1))

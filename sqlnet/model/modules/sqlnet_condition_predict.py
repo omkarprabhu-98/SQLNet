@@ -62,10 +62,10 @@ class SQLNetCondPredictor(nn.Module):
         self.cond_str_gru = nn.GRU(input_size=N_word, hidden_size=N_h/2,
                 num_layers=N_depth, batch_first=True,
                 dropout=0.3, bidirectional=True).cuda()
-        self.cond_str_decoder = nn.GRU(input_size=self.max_tok_num,
+        self.cond_str_decoder = nn.LSTM(input_size=self.max_tok_num,
                 hidden_size=N_h, num_layers=N_depth,
                 batch_first=True, dropout=0.3).cuda()
-        self.cond_str_name_enc = nn.GRU(input_size=N_word, hidden_size=N_h/2,
+        self.cond_str_name_enc = nn.LSTM(input_size=N_word, hidden_size=N_h/2,
                 num_layers=N_depth, batch_first=True,
                 dropout=0.3, bidirectional=True).cuda()
         self.cond_str_out_g = nn.Linear(N_h, N_h)

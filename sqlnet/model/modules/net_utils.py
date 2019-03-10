@@ -19,7 +19,7 @@ def run_gru(gru, inp, inp_len, hidden=None):
     if hidden is None:
         gru_hidden = None
     else:
-        gru_hidden = (hidden[0][:, sort_perm], hidden[1][:, sort_perm])
+        gru_hidden = hidden[0][:, sort_perm]
 
     sort_ret_s, sort_ret_h = gru(gru_inp, gru_hidden)
     ret_s = nn.utils.rnn.pad_packed_sequence(
